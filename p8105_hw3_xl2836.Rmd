@@ -1,0 +1,71 @@
+---
+title: "Homework_3"
+author: "Xinyi Lin"
+date: "10/11/2018"
+output: github_document
+---
+```{r}
+library(tidyverse)
+
+theme_set(theme_bw() + theme(legend.position = "bottom"))
+```
+
+# Problem 1
+
+## Load and clean data
+
+```{r}
+brfss_df = 
+  p8105.datasets::brfss_smart2010 %>% 
+  janitor::clean_names() %>% 
+  filter(topic == "Overall Health") %>% 
+  mutate(response = factor(response, order=TRUE, levels = c("Excellent", "Very good", "Good", "Fair", "Poor")))
+```
+
+## Answer questions
+
+### Question 1
+
+```{r}
+brfss_df %>% 
+  filter(year == 2002) %>% 
+  group_by(locationabbr) %>% 
+  summarise(locations_num = length(unique(locationdesc))) %>% 
+  filter(locations_num == 7)
+```
+
+According to the table above, we can find that "CT", "FL", "NC" were observed at 7 locations.
+
+### Question 2
+
+```{r}
+brfss_df %>% 
+  group_by(locationabbr, year) %>% 
+  summarise(locations_num = length(unique(locationdesc))) %>% 
+  ggplot(aes(x = year, y = locations_num, color = locationabbr)) +
+  geom_line()
+```
+### Question 3
+
+```{r}
+brfss_df %>% 
+  filter(year == 2002 | year == 2006 | year == 2010, locationabbr == "NY", response == "Excellent") %>%
+  group_by(year) %>% 
+  summarise(excellent_mean = mean(data_value),
+            excellent_sd = sd(data_value, na.rm = ))
+```
+
+### Question 4
+
+```{r}
+aver_prop_df =
+  brfss_df %>% 
+  group_by(year, locationabbr, response) %>% 
+  summarise(average_proportion = mean(data_value))
+
+# draw plot
+ggplot(aver_prop_df, aes(x = year, y = average_proportion, color = locationabbr)) +
+         geom_line() +
+         facet_grid(. ~ response)
+```
+
