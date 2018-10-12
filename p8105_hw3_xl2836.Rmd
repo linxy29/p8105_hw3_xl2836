@@ -44,6 +44,8 @@ brfss_df %>%
   summarise(locations_num = length(unique(locationdesc))) %>% 
   ggplot(aes(x = year, y = locations_num, color = locationabbr)) +
   geom_line()
+
+head(brfss_df)
 ```
 ### Question 3
 
@@ -66,6 +68,45 @@ aver_prop_df =
 # draw plot
 ggplot(aver_prop_df, aes(x = year, y = average_proportion, color = locationabbr)) +
          geom_line() +
-         facet_grid(. ~ response)
+         facet_grid(.~ response)
+        #facet_wrap(~ response, nrow = 2)
 ```
+
+# Problem 2
+
+## Load and describe data set
+
+```{r}
+instacart_df =
+  p8105.datasets::instacart %>% 
+  janitor::clean_names()
+
+head(instacart_df)
+```
+
+The data set "instacart" records the data about orders information, it contains `r nrow(instacart_df)` observations and `r ncol(instacart_df)` variables. Among those variables, `order_id`, `order_number`, `aisle`, `department` are important.
+
+## Answer Questions
+
+### Question 1
+
+```{r}
+asile_num = length(unique(instacart_df$aisle))
+
+aisle_item_df =
+  instacart_df %>% 
+  group_by(aisle) %>% 
+  summarise(items_num = length(unique(product_name))) %>% 
+  arrange(desc(items_num)) %>% 
+  head()
+
+tail(aisle_item_df)
+```
+
+There are `r asile_num` aisles and the "fresh fruits" aisle is the most items ordered from. Also, we can find that those which most items ordered from are sneaks. Besides, the number of aisle which most items ordered from and the number of aisle which least items ordered from are significant different.
+
+### Question 2
+
+
+
 
