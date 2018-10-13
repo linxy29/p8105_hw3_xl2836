@@ -8,7 +8,7 @@ output: github_document
 library(tidyverse)
 
 knitr::opts_chunk$set(
-  fig.width = 16,
+  fig.width = 10,
   fig.asp = .6,
   out.width = "100%"
 )
@@ -49,7 +49,8 @@ brfss_df %>%
   group_by(locationabbr, year) %>% 
   summarise(locations_num = length(unique(locationdesc))) %>% 
   ggplot(aes(x = year, y = locations_num, color = locationabbr)) +
-  geom_line() 
+  geom_line() +
+  theme(legend.position = "right")
 
 head(brfss_df)
 ```
