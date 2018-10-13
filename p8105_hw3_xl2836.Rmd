@@ -7,12 +7,6 @@ output: github_document
 ```{r}
 library(tidyverse)
 
-knitr::opts_chunk$set(
-  fig.width = 6,
-  fig.asp = .6,
-  out.width = "90%"
-)
-
 theme_set(theme_bw() + theme(legend.position = "bottom"))
 ```
 
@@ -75,7 +69,8 @@ aver_prop_df =
 ggplot(aver_prop_df, aes(x = year, y = average_proportion, color = locationabbr)) +
   geom_point() + 
   facet_grid(.~ response) +
-  ylab("aver_proportion(%)")
+  ylab("aver_proportion(%)") +
+  theme(legend.position = "none") 
 ```
 
 # Problem 2
@@ -101,7 +96,7 @@ asile_num = length(unique(instacart_df$aisle))
 
 aisle_item_df =
   instacart_df %>% 
-  group_by(aisle, department) %>% 
+  group_by(aisle,department) %>% 
   summarise(items_num = n()) %>% 
   arrange(desc(items_num))
 
@@ -113,12 +108,12 @@ There are `r asile_num` aisles and the "fresh vegetables" aisle is the most item
 ### Question 2
 
 ```{r}
-library(ggrepel)
-
-ggplot(aisle_item_df, aes(x = department, y = items_num)) + 
+aisle_item_df %>% 
+  as.data.frame() %>% 
+  mutate(aisle = reorder(aisle, desc(items_num))) %>% 
+  ggplot(aes(x = aisle, y = items_num)) + 
   geom_point() +
-  geom_text_repel(aes(x = department, y = items_num, label = aisle)) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 5)) 
 ```
 
 ```{r}
@@ -127,9 +122,9 @@ aisle_item_df %>%
   mutate(aisle = reorder(aisle, desc(items_num))) %>% 
   ggplot(aes(x = aisle, y = items_num)) + 
   geom_point() +
+  facet_wrap(~department, ncol = 1, scales = "free_x")
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
 ```
-
 
 ### Question 3
 
@@ -206,7 +201,15 @@ First, we need to clean the data.
 ```{r, cache = TRUE}
 ny_noaa_clean = 
   ny_noaa_df %>% 
-  separate(date, into = c("year", "month", "day"), sep = "-")
+  separate(date, into = c("year", "month", "day"), sep = "-") %>% 
+  mutate(year = as.numeric(year),
+         month = as.numeric(month),
+         day = as.numeric(day),
+         prcp = as.numeric(prcp),
+         snow = as.numeric(snow),
+         snwd = as.numeric(snwd),
+         tmax = as.numeric(tmax)/10,
+         tmin = as.numeric(tmin)/10)
 
 ny_noaa_clean
 ```
@@ -225,24 +228,46 @@ According to the table, we can find 0 is the most commonly observed values. As s
 
 ```{r}
 ny_noaa_clean %>% 
-  filter(month == "01" | month == "05") %>% 
-  group_by(year, month, id) %>% 
-  summarise(aver_tmax = mean(tmax, na.rm = TRUE)) %>% 
-  filter(!is.na(aver_tmax)) %>% 
-  ggplot(aes(x = year, y = aver_tmax, color = id)) +
-  geom_boxplot() +
+  filter(!is.na(tmax), month == 1 | month == 7) %>% 
+  mutate(month = month.name[month]) %>% 
+  group_by(id, year, month) %>% 
+  summarise(aver_tmax = mean(tmax)) %>% 
+  ggplot(aes(x = year, y = aver_tmax)) +
+  geom_boxplot(aes(group = year)) +
   facet_grid(.~ month)
 ```
 
+According to the plot, we can find that both "January" table and "July" table have outliers. Tmax in "January"" has a larger range, while the mean of tmax of January is lower.
+
 ### Question 3
 
-```{r}
+First table.
 
+```{r}
+temp_plot =
+  ny_noaa_clean %>% 
+  filter(!is.na(tmin), !is.na(tmax)) %>% 
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_hex() + 
+  theme(legend.text = element_text(angle = 45, size = 6))
+
+temp_plot
 ```
 
 ```{r}
-ny_noaa_clean %>% 
-  filter(sonw > 0 & snow <100) %>% 
-  ggplot(aes(x = year, fill = snow)
+snow_plot =
+  ny_noaa_clean %>% 
+  filter(snow > 0 & snow < 100) %>% 
+  ggplot(aes(x = year, y = snow)) +
+  geom_boxplot(aes(group = year))
+
+snow_plot
 ```
 
+```{r}
+library(patchwork)
+
+temp_plot + snow_plot
+```
+
+According to the first plot, we can find, most `tmax` and `tmin` values are around 0. According to the second plot, we can find from 1980 to 1995, the distribution of snowfall values greater than 0 and less than 100 are similar, however, outliers start to appear and  1.5 IQR of the lower quartile and upper quartile are lower after 1997.
