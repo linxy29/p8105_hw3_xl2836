@@ -49,7 +49,7 @@ brfss_df %>%
   group_by(locationabbr, year) %>% 
   summarise(locations_num = length(unique(locationdesc))) %>% 
   ggplot(aes(x = year, y = locations_num, color = locationabbr)) +
-  geom_line()
+  geom_line() 
 
 head(brfss_df)
 ```
@@ -73,9 +73,9 @@ aver_prop_df =
 
 # draw plot
 ggplot(aver_prop_df, aes(x = year, y = average_proportion, color = locationabbr)) +
-         geom_line() +
-         facet_grid(.~ response)
-        #facet_wrap(~ response, nrow = 2)
+  geom_point() + 
+  facet_grid(.~ response) +
+  ylab("aver_proportion(%)")
 ```
 
 # Problem 2
@@ -102,13 +102,13 @@ asile_num = length(unique(instacart_df$aisle))
 aisle_item_df =
   instacart_df %>% 
   group_by(aisle, department) %>% 
-  summarise(items_num = length(unique(product_name))) %>% 
+  summarise(items_num = n()) %>% 
   arrange(desc(items_num))
 
 aisle_item_df
 ```
 
-There are `r asile_num` aisles and the "dairy eggs" aisle is the most items ordered from. Also, we can find that those which most items ordered from are sneaks. Besides, the number of aisle which most items ordered from and the number of aisle which least items ordered from are significant different.
+There are `r asile_num` aisles and the "fresh vegetables" aisle is the most items ordered from. As we can find in the table, aisle which more items ordered from are ingredients we need everyday.
 
 ### Question 2
 
@@ -117,10 +117,19 @@ library(ggrepel)
 
 ggplot(aisle_item_df, aes(x = department, y = items_num)) + 
   geom_point() +
-  geom_text_repel(aes(x = department, y = items_num, label = aisle))+
-  theme_classic(base_size = 16)
-  #facet_grid()
+  geom_text_repel(aes(x = department, y = items_num, label = aisle)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
 ```
+
+```{r}
+aisle_item_df %>% 
+  as.data.frame() %>% 
+  mutate(aisle = reorder(aisle, desc(items_num))) %>% 
+  ggplot(aes(x = aisle, y = items_num)) + 
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+```
+
 
 ### Question 3
 
@@ -142,7 +151,8 @@ instacart_df %>%
   filter(product_name == "Pink Lady Apples" | product_name == "Coffee Ice Cream") %>% 
   group_by(product_name, order_dow) %>% 
   summarise(mean_hour_day = mean(order_hour_of_day)) %>% 
-  #mutate(order_dow = weekdays(order_dow)) %>% 
+  mutate(order_dow = factor(order_dow, levels = 0:6,
+                      labels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))) %>% 
   spread(key = order_dow, value = mean_hour_day)
 ```
 
@@ -193,7 +203,7 @@ There are `r nrow(ny_noaa_df)` observations and `r ncol(ny_noaa_df)` variables i
 
 First, we need to clean the data.
 
-```{r, cache=TRUE}
+```{r, cache = TRUE}
 ny_noaa_clean = 
   ny_noaa_df %>% 
   separate(date, into = c("year", "month", "day"), sep = "-")
@@ -209,15 +219,19 @@ table(ny_noaa_clean$snow) %>%
   arrange(desc(Freq))
 ```
 
-According to the table, we can find 0 is the most commonly observed values.
+According to the table, we can find 0 is the most commonly observed values. As snow doesn't appear often, no snowfall apears most, so the most commonly observed values is 0.
 
 ### Question 2
 
 ```{r}
 ny_noaa_clean %>% 
   filter(month == "01" | month == "05") %>% 
-  group_by(year, id) %>% 
-  summarise(aver_tem = mean(tmax, na.rm = TRUE))
+  group_by(year, month, id) %>% 
+  summarise(aver_tmax = mean(tmax, na.rm = TRUE)) %>% 
+  filter(!is.na(aver_tmax)) %>% 
+  ggplot(aes(x = year, y = aver_tmax, color = id)) +
+  geom_boxplot() +
+  facet_grid(.~ month)
 ```
 
 ### Question 3
