@@ -26,6 +26,8 @@ brfss_df =
   janitor::clean_names() %>% 
   filter(topic == "Overall Health") %>% 
   mutate(response = factor(response, order = TRUE, levels = c("Excellent", "Very good", "Good", "Fair", "Poor")))
+
+head(brfss_df)
 ```
 
 ## Answer questions
@@ -51,8 +53,6 @@ brfss_df %>%
   ggplot(aes(x = year, y = locations_num, color = locationabbr)) +
   geom_line() +
   theme(legend.position = "right")
-
-head(brfss_df)
 ```
 ### Question 3
 
@@ -77,7 +77,7 @@ ggplot(aver_prop_df, aes(x = year, y = average_proportion, color = locationabbr)
   geom_point() + 
   facet_grid(.~ response) +
   ylab("aver_proportion(%)") +
-  theme(legend.position = "none") + 
+  theme(legend.position = "left") + 
   theme(axis.text.x = element_text(angle = 45))
 ```
 
@@ -93,7 +93,7 @@ instacart_df =
 head(instacart_df)
 ```
 
-The data set "instacart" records the data about orders information, it contains `r nrow(instacart_df)` observations and `r ncol(instacart_df)` variables. Among those variables, `order_id`, `order_number`, `aisle`, `department` are important. For example, for the first observation, product"Bulgarian Yogurt" with id 49302 is the first product add in the number one order by user 112108. This order is the forth order of this user and it is placed at 10. The product comes from aisle "yogurt" and department "dairy eggs".
+The data set "instacart" records the data about orders information, it contains `r nrow(instacart_df)` observations and `r ncol(instacart_df)` variables and we loaded it as data.frame. Among those variables, `order_id`, `order_number`, `aisle`, `department` are important. For example, for the first observation, product"Bulgarian Yogurt" with id 49302 is the first product add in the number one order by user 112108. This order is the forth order of this user and it is placed at 10. The product comes from aisle "yogurt" and department "dairy eggs".
 
 ## Answer Questions
 
@@ -108,10 +108,10 @@ aisle_item_df =
   summarise(items_num = n()) %>% 
   arrange(desc(items_num))
 
-aisle_item_df
+head(aisle_item_df)
 ```
 
-There are `r asile_num` aisles and the "fresh vegetables" aisle is the most items ordered from. As we can find in the table, aisle which more items ordered from are ingredients we need everyday.
+There are `r asile_num` aisles and the "fresh vegetables" aisle is the most items ordered from. As we can find in the table, aisles which more items ordered from are ingredients we need everyday.
 
 ### Question 2
 
@@ -124,6 +124,8 @@ aisle_item_df %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 5)) 
 ```
 
+As we can see in the table, items ordered from first few asiles are far more than items ordered from other aisle, which shows this few asiles are far more popular than other asiles.
+
 ### Question 3
 
 ```{r}
@@ -133,9 +135,9 @@ instacart_df %>%
   summarise(orders_num = length(unique(order_id))) %>% 
   mutate(rank = min_rank(desc(orders_num))) %>% 
   filter(rank == 1)
-  #arrange(aisle, desc(orders_num)) %>% 
-  
 ```
+
+We can find that even though the shown product are all most popular items in each aisle, their orders number are totally different, which shows people need more units of packaged vegetables fruits or baking ingredients than dog food care.
 
 ## Question 4
 
@@ -149,7 +151,7 @@ instacart_df %>%
   spread(key = order_dow, value = mean_hour_day)
 ```
 
-According to the table, we can found that the difference of mean order hour of the day between two items or two days is not significant. And Wednesday is have more orders for two items.
+According to the table, we can found that the difference of mean order hour of the day between two items or two days is not significant. And there are more orders for two items in Wednesday.
 
 # Problem 3
 
@@ -188,7 +190,7 @@ tmin_na_num =
   nrow() 
 ```
 
-There are `r nrow(ny_noaa_df)` observations and `r ncol(ny_noaa_df)` variables in NY NOAA data, and key variables including `date`, `prcp`, `snow`. In `prcp` variables, the proportion of missing values is `r scales::percent(prcp_na_num/nrow(ny_noaa_df))`. In `snow` variables, the proportion of missing values is `r scales::percent(snow_na_num/nrow(ny_noaa_df))`. In `snwd` variables, the proportion of missing values is `r scales::percent(snwd_na_num/nrow(ny_noaa_df))`. In `tmax` variables, the proportion of missing values is `r scales::percent(tmax_na_num/nrow(ny_noaa_df))`. In `tmin` variables, the proportion of missing values is `r scales::percent(tmin_na_num/nrow(ny_noaa_df))`. There are almost half of values are missing in `tmax` and `tmin` variables, and one fifth of values are missing in `snwd` variable. All of these missing values bring trouble to continuing data analysis.
+There are `r nrow(ny_noaa_df)` observations and `r ncol(ny_noaa_df)` variables in NY NOAA data. We loaded this data as data.frame. Key variables including `date`, `prcp`, `snow`. In `prcp` variables, the proportion of missing values is `r scales::percent(prcp_na_num/nrow(ny_noaa_df))`. In `snow` variables, the proportion of missing values is `r scales::percent(snow_na_num/nrow(ny_noaa_df))`. In `snwd` variables, the proportion of missing values is `r scales::percent(snwd_na_num/nrow(ny_noaa_df))`. In `tmax` variables, the proportion of missing values is `r scales::percent(tmax_na_num/nrow(ny_noaa_df))`. In `tmin` variables, the proportion of missing values is `r scales::percent(tmin_na_num/nrow(ny_noaa_df))`. There are almost half of values are missing in `tmax` and `tmin` variables, and one fifth of values are missing in `snwd` variable. All of these missing values bring trouble to further data analysis.
 
 ## Answer questions
 
@@ -203,13 +205,13 @@ ny_noaa_clean =
   mutate(year = as.numeric(year),
          month = as.numeric(month),
          day = as.numeric(day),
-         prcp = as.numeric(prcp),
+         prcp = as.numeric(prcp)/10,
          snow = as.numeric(snow),
          snwd = as.numeric(snwd),
          tmax = as.numeric(tmax)/10,
          tmin = as.numeric(tmin)/10)
 
-ny_noaa_clean
+head(ny_noaa_clean)
 ```
 
 Then, we calculate the most commonly observed values for snowfall.
@@ -217,10 +219,11 @@ Then, we calculate the most commonly observed values for snowfall.
 ```{r}
 table(ny_noaa_clean$snow) %>% 
   data.frame() %>% 
-  arrange(desc(Freq))
+  arrange(desc(Freq)) %>% 
+  head()
 ```
 
-According to the table, we can find 0 is the most commonly observed values. As snow doesn't appear often, no snowfall apears most, so the most commonly observed values is 0.
+According to the table, we can find 0 is the most commonly observed values. As snow doesn't appear often, "no snowfall" apears most, so the most commonly observed values is 0.
 
 ### Question 2
 
@@ -252,6 +255,8 @@ temp_plot =
 temp_plot
 ```
 
+Second table.
+
 ```{r}
 snow_plot =
   ny_noaa_clean %>% 
@@ -268,4 +273,4 @@ library(patchwork)
 temp_plot + snow_plot
 ```
 
-According to the first plot, we can find, most `tmax` and `tmin` values are around 0. According to the second plot, we can find from 1980 to 1995, the distribution of snowfall values greater than 0 and less than 100 are similar, however, outliers start to appear and  1.5 IQR of the lower quartile and upper quartile are lower after 1997.
+According to the first plot, we can find, most `tmax` and `tmin` values are around 0, which means tempretures around 0 appear most. According to the second plot, we can find from 1980 to 1995, the distribution of snowfall values greater than 0 and less than 100 are similar, however, outliers start to appear and  1.5 IQR of the lower quartile and upper quartile are lower after 1997. And the medians are the same across year.
